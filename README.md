@@ -1,6 +1,8 @@
+
 Docker Setup
 To make it easier to set up the environment, we’ve provided a Dockerfile and a docker-compose.yml file. By running docker-compose up, the application will automatically build and start within Docker containers.
-
+Start with 
+docker compose up
 Step-by-Step Docker Setup
 Build and Start the Containers: To launch the application, simply run:
 
