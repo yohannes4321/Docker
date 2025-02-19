@@ -19,7 +19,7 @@ Ensure you have the following installed:
 
 ### Clone the Repository
 ```sh
-git clone https://github.com/yohannes4321/Docker.git
+git clone https://github.com/Docker.git
 cd Docker
 cd project
 ```
