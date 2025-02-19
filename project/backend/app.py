@@ -11,7 +11,7 @@ np.random.seed(42)
 X_sample = np.random.rand(100, 1) * 10
 y_sample = 2.5 * X_sample.flatten() + np.random.randn(100) * 2
 
-# Train initial model
+ 
 model = LinearRegression()
 model.fit(X_sample, y_sample)
 
