@@ -1,119 +1,183 @@
-Docker Setup
-To make it easier to set up the environment, we’ve provided a Dockerfile and a docker-compose.yml file. By running docker-compose up, the application will automatically build and start within Docker containers.
+# Dockerized Full-Stack Application
 
-Step-by-Step Docker Setup
-Build and Start the Containers: To launch the application, simply run:
+This project is a full-stack application consisting of a React frontend and a Flask backend. The services are containerized using Docker and managed using Docker Compose.
 
-bash
-Copy
-Edit
-docker-compose up
-This command will:
+## Features
+- **Frontend**: Built with React, running on Node.js.
+- **Backend**: Built with Flask, using Scikit-Learn for machine learning.
+- **Dockerized**: Both services run in isolated containers.
+- **Networking**: Uses a Docker network for seamless communication between services.
+- **Environment Variables**: Configurable API URL for frontend communication.
 
-Build the Docker image based on the Dockerfile
-Start the Flask backend container
-Expose the app on http://localhost:5000
-Stopping the Containers: To stop the application, run:
+---
 
-bash
-Copy
-Edit
+## Getting Started
+### Prerequisites
+Ensure you have the following installed:
+- [Docker](https://www.docker.com/get-started)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+### Clone the Repository
+```sh
+git clone https://github.com/yohannes4321/Docker.git
+cd Docker
+cd project
+```
+
+### Build and Run the Application
+Run the following command to build and start the containers:
+```sh
+docker-compose up --build
+```
+This will start both the frontend (React) and backend (Flask) services.
+
+### Accessing the Application
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:5000
+- **Health Check Endpoint**: http://localhost:5000/health
+
+### Stopping the Application
+To stop the running containers, use:
+```sh
 docker-compose down
-Dockerfile
-Here is the Dockerfile that defines how the backend should be built:
+```
 
-Dockerfile
-Copy
-Edit
-# Use an official Python runtime as a parent image
-FROM python:3.8-slim
+---
 
-# Set the working directory in the container
-WORKDIR /app
+## Project Structure
+```
+📂 project-root/
+ ├── 📂 backend/              # Flask backend
+ │   ├── Dockerfile.backend   # Backend Dockerfile
+ │   ├── app.py              # Flask application
+ │   ├── requirements.txt    # Python dependencies
+ ├── 📂 frontend/             # React frontend
+ │   ├── Dockerfile.frontend  # Frontend Dockerfile
+ │   ├── package.json        # Node.js dependencies
+ ├── docker-compose.yml       # Docker Compose configuration
+ ├── .dockerignore            # Docker ignore file
+```
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+---
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+## Docker Configuration
+### Purpose of Dockerization
+Docker allows us to package our application and its dependencies into isolated environments (containers). This ensures consistency across different development and production setups. By using Docker, we eliminate the "works on my machine" problem and simplify deployment.
 
-# Make port 5000 available to the world outside the container
-EXPOSE 5000
+### Frontend Dockerfile Explanation
+```dockerfile
+FROM node:20-slim  # Use a lightweight Node.js 20 base image
+WORKDIR /app  # Set the working directory inside the container
+COPY package*.json ./  # Copy package files for dependency installation
+RUN npm install  # Install dependencies
+COPY . .  # Copy the rest of the application files
+EXPOSE 3000  # Expose port 3000 for frontend access
+CMD ["npm", "run", "dev", "--", "--host"]  # Start the development server
+```
+This setup ensures that the frontend runs in a controlled environment and is ready to be accessed via port 5173 (as mapped in Docker Compose).
 
-# Define environment variable
-ENV FLASK_APP=app.py
+### Backend Dockerfile Explanation
+```dockerfile
+FROM python:3.11-slim  # Use a lightweight Python 3.11 base image
+WORKDIR /app  # Set the working directory inside the container
+COPY requirements.txt .  # Copy the dependency file
+RUN pip install --no-cache-dir -r requirements.txt  # Install dependencies efficiently
+COPY . .  # Copy the rest of the application files
+EXPOSE 5000  # Expose port 5000 for backend access
+CMD ["python", "app.py"]  # Start the Flask application
+```
+This ensures that our Python-based backend runs consistently in an isolated environment.
 
-# Run the Flask application
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
-Docker Compose Configuration
-The docker-compose.yml file is used to define and run multi-container Docker applications. For this project, we’re only using one container for the backend, but Docker Compose helps manage this efficiently.
-
-Here’s the docker-compose.yml:
-
-yaml
-Copy
-Edit
-version: '3.8'
-
+### Docker Compose File Explanation
+```yaml
+version: "3.8"
 services:
-  backend:
-    build: .
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend  # Build the frontend container
     ports:
-      - "5000:5000"  # Map container's port 5000 to host's port 5000
+      - "5173:5173"  # Map the container port to localhost
     environment:
-      FLASK_APP: app.py
+      - VITE_API_URL=http://backend:5000  # Backend API URL for communication
     volumes:
-      - .:/app  # Mount the current directory to /app in the container
+      - .:/app  # Mount the current directory for live updates
+      - /app/node_modules  # Avoid overwriting node_modules
     networks:
-      - backend_network
+      - app-network  # Connect to the internal network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend  # Build the backend container
+    ports:
+      - "5000:5000"  # Map the container port to localhost
+    volumes:
+      - ./backend:/app  # Mount the backend directory for live updates
+      - /app/venv  # Avoid overwriting the virtual environment
+    networks:
+      - app-network  # Connect to the internal network
 
 networks:
-  backend_network:
-    driver: bridge
-How It Works:
-build: This builds the image using the Dockerfile in the current directory.
-ports: Maps port 5000 inside the container to port 5000 on your host machine.
-volumes: Mounts the current directory into the container, so you can edit files without rebuilding the container.
-networks: Specifies a network for the service to connect to, making it easier to scale and manage multiple containers in the future.
-API Endpoints
-POST /predict
-Makes a prediction using the linear regression model.
+  app-network:
+    driver: bridge  # Create an internal bridge network for communication
+```
+This setup:
+- Defines two services: `frontend` and `backend`.
+- Uses a custom bridge network to enable communication between services.
+- Mounts project directories for real-time updates without rebuilding.
+- Maps ports from containers to the host machine for accessibility.
 
-Request body:
+---
 
-json
-Copy
-Edit
-{
-  "X_test": [5.0]
-}
-Response:
-
-json
-Copy
-Edit
-{
-  "predictions": [12.5],
-  "model_info": {
-    "coefficient": 2.5,
-    "intercept": 0.0
-  }
-}
-GET /health
-Health check endpoint that also returns model information.
-
-Response:
-
-json
-Copy
-Edit
+## Backend API Endpoints
+### 1. Health Check
+- **Endpoint:** `/health`
+- **Method:** `GET`
+- **Response:**
+```json
 {
   "status": "healthy",
   "model_info": {
     "coefficient": 2.5,
-    "intercept": 0.0
+    "intercept": 1.2
   }
 }
-Conclusion
-By using Docker and Docker Compose, you can easily run the Linear Regression Predictor Flask application with just a single command: docker-compose up. This will automate the process of building the image, running the application, and exposing the server to the host machine.
+```
+
+### 2. Predict
+- **Endpoint:** `/predict`
+- **Method:** `POST`
+- **Request Body:**
+```json
+{
+  "X_test": [2, 5, 8]
+}
+```
+- **Response:**
+```json
+{
+  "predictions": [5.3, 12.1, 18.7],
+  "model_info": {
+    "coefficient": 2.5,
+    "intercept": 1.2
+  }
+}
+```
+
+---
+
+## .dockerignore
+To optimize Docker builds, unnecessary files are ignored:
+```
+node_modules
+venv
+__pycache__
+.env
+```
+
+---
+
+## Conclusion
+This project provides a simple setup for a Dockerized full-stack application. The frontend communicates with the backend via a REST API, and both services run in isolated containers using Docker Compose. By using Docker, we ensure consistency, portability, and an easy-to-deploy environment.
 
