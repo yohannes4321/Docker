@@ -1,4 +1,4 @@
-# Dockerized Full-Stack Application
+# Dockerized Simple  LinearRegression using flask and connect to frontend
 
 This project is a full-stack application consisting of a React frontend and a Flask backend. The services are containerized using Docker and managed using Docker Compose.
 
