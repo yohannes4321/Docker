@@ -66,19 +66,20 @@ Docker allows us to package our application and its dependencies into isolated e
 
 ### Frontend Dockerfile Explanation
 ```dockerfile
-FROM node:20-slim  # Use a lightweight Node.js 20 base image
-WORKDIR /app  # Set the working directory inside the container
-COPY package*.json ./  # Copy package files for dependency installation
-RUN npm install  # Install dependencies
-COPY . .  # Copy the rest of the application files
-EXPOSE 3000  # Expose port 3000 for frontend access
-CMD ["npm", "run", "dev", "--", "--host"]  # Start the development server
+FROM node:20-slim  #i have useed as Use a lightweight Node.js 20 base image
+WORKDIR /app  # the idea is to set e working directory inside the container
+COPY package*.json ./  #  just Copy package files for dependency installation to copy all of package.json
+RUN npm install  # Installing the  dependencies
+COPY . .  # i want to Copy the rest of the application files to
+EXPOSE 3000  # show and exposse  port 3000 for frontend 
+CMD ["npm", "run", "dev", "--", "--host"]  # Start server
 ```
 This setup ensures that the frontend runs in a controlled environment and is ready to be accessed via port 5173 (as mapped in Docker Compose).
 
 ### Backend Dockerfile Explanation
 ```dockerfile
-FROM python:3.11-slim  # Use a lightweight Python 3.11 base image
+FROM python:3.11-slim  #  i have Used a  Python 3.11 base image because it is lighwight
+
 WORKDIR /app  # Set the working directory inside the container
 COPY requirements.txt .  # Copy the dependency file
 RUN pip install --no-cache-dir -r requirements.txt  # Install dependencies efficiently
